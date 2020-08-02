@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import WebSocket from 'ws';
 import http from 'http';
-import {authenticateAndSend, wsAuthenticateAndSend, sendMessage} from './share-whatsapp';
+import {wsAuthenticateAndSend, sendMessage, logout} from './share-whatsapp';
 
 const app = express();
 app.use(cors());
@@ -24,12 +24,11 @@ wss.on('connection', (ws) => {
   wsAuthenticateAndSend(ws);
 });
 
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/authenticate-whatsapp/', (req, res) => {
-  authenticateAndSend(res, req.query.name, req.query.title);
-});
+app.get('/logout/', (req, res) => {
+  logout(res);
+})
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

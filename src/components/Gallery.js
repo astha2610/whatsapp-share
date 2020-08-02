@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
 import '../App.css';
 import QRLoader from './QRCodeLoader';
@@ -44,21 +44,30 @@ const dataObj = [{
   title: 'Your Heart Is The Sea',
   name: 'book8',
   link: book8
-}]
+}];
 
-function ImageGallery() {
+function ImageGallery({userInfo: userData , updateUserInfo}) {
   const regexpNum = /^[0-9\b]+$/;
 
   const [showModal, setShowModal] = useState(false);
   const [showMobileInput, setShowMobileInput] = useState(false);
+  const [userInfo, setUserInfo] = useState(userData);
   const [mobileNumber, setMobileNumber] = useState('');
+  const [qrCode, setQRCode] = useState('');
+  const [ws, setWS] = useState(null);
+  const [error, setMobileError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [data, setData] = useState({
     name: '',
     title: ''
   });
-  const [qrCode, setQRCode] = useState('');
-  const [ws, setWS] = useState(null);
-  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setUserInfo(userData);
+    if (!userData) {
+      setShowMobileInput(false);
+    }
+  }, [userData])
   
   const authenticateToSendMessage = async (name, title) => {
     const wss = new WebSocket('ws://localhost:3001/auth/');
@@ -72,20 +81,28 @@ function ImageGallery() {
       if (data.qr) {
         setQRCode(data.qr);
       } else if (data.success) {
+        if (data.userInfo) {
+          updateUserInfo(data.userInfo);
+        }
         setShowMobileInput(true);
-      } else if (data.msg_success) {
-        setShowModal(false);
+      } else if (typeof data.msg_success !== 'undefined') {
+        if (data.msg_success) {
+          setShowModal(false);
+        } else {
+          setErrorMsg(data.error_msg);
+        }
       }
     }
   }
 
   const sendMessage = (name, title) => {
+    setErrorMsg('');
     if (mobileNumber && mobileNumber.length === 10) {
       const tempObj = {...data, mobile: mobileNumber};
       const txt = JSON.stringify(tempObj);
       ws.send(txt);
     } else {
-      setError('Please enter a valid mobile number');
+      setMobileError('Please enter a valid mobile number');
     }
   }
 
@@ -107,11 +124,20 @@ function ImageGallery() {
                   <img src={qrCode} alt="qr code" />
                 </>) || null}
                 {(showMobileInput && <>
-                  <p className="modal-text">Please enter the number you want to send message to: </p>
-                  <div className="input-wrapper">
-                    <input type="text" value={mobileNumber} className="common-input" onChange={(e) => setMobileNumber(e.target.value)} maxLength={10} required />
+                  <p className="modal-text">{userInfo.name}, please enter the number you want to send message to: </p>
+                  <div className="input-button">
+                    <div className="input-wrapper">
+                      <input type="text" value={mobileNumber} autoFocus className="common-input" onChange={(e) => {
+                        const val = e.target.value;
+                        if(val === '' || regexpNum.test(val)){
+                          setMobileNumber(val);
+                        }
+                      }} maxLength={10} required />
+                      <p className="modal-error-text">{error || ''}</p>
+                    </div>
                     <button className="send-button" onClick={sendMessage}>SEND</button>
                   </div>
+                  <p className="modal-error-text">{errorMsg || ''}</p>
                 </>) || null}
               </>
               : 

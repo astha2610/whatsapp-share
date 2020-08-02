@@ -22,6 +22,28 @@
   pointer-events: none;
 }
 
+.header-text {
+  color: #ffffff;
+  font-size: 15px;
+  padding: 0 5px;
+  margin: 0;
+}
+
+.logout-text {
+  color: #ffffff;
+  font-size: 13px;
+  padding: 0 5px;
+  margin: 0;
+  text-decoration: none;
+}
+
+.user-info-container{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin: 0 10px;
+}
+
 .header-logo-container {
   width: 20%;
   display: flex;
@@ -105,7 +127,7 @@
   padding: 20px;
   border: 1px solid #888;
   min-height: 300px;
-  width: 45%; /* Could be more or less, depending on screen size */
+  width: 55%; /* Could be more or less, depending on screen size */
 }
 
 .close {
